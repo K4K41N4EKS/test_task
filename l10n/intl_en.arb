@@ -1,0 +1,16 @@
+{
+    "@@locale": "en",
+    "searchHint": "Search images...",
+    "@searchHint": {
+      "description": "Hint text displayed in the search bar for searching images."
+    },
+    "errorLoadingImages": "Error loading images. Please try again later.",
+    "@errorLoadingImages": {
+      "description": "Error message displayed when images fail to load."
+    },
+    "noImagesFound": "No images found.",
+    "@noImagesFound": {
+      "description": "Message displayed when no images are found."
+    }
+  }
+  

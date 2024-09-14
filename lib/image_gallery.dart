@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
-import 'package:intl/intl.dart'; 
-import 'package:logging/logging.dart'; 
+import 'package:intl/intl.dart';
+import 'package:logging/logging.dart';
 import 'image_service.dart';
 import 'image_details.dart';
 
@@ -122,6 +121,18 @@ class ImageGalleryState extends State<ImageGallery> {
     }
   }
 
+  /// Determines the number of columns based on the screen width
+  int _calculateCrossAxisCount(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    if (width >= 1200) {
+      return 4; 
+    } else if (width >= 800) {
+      return 3; 
+    } else {
+      return 2; 
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,13 +146,13 @@ class ImageGalleryState extends State<ImageGallery> {
           ),
         ),
       ),
-      body: _buildBody(),
+      body: _buildBody(context),
     );
   }
 
   /// Builds the main body of the gallery. It shows either a grid of images or a
   /// message if no images are found.
-  Widget _buildBody() {
+  Widget _buildBody(BuildContext context) {
     if (_images.isEmpty && !_isLoading) {
       return Center(
         child: Text(
@@ -150,10 +161,15 @@ class ImageGalleryState extends State<ImageGallery> {
       );
     }
 
-    return MasonryGridView.count(
+    return GridView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.all(8.0),
-      crossAxisCount: MediaQuery.of(context).size.width < 600 ? 2 : 4,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _calculateCrossAxisCount(context),
+        crossAxisSpacing: 8.0,
+        mainAxisSpacing: 8.0,
+        childAspectRatio: 1.0, // Квадратная сетка
+      ),
       itemCount: _images.length + (_isLoading ? 1 : 0),
       itemBuilder: (context, index) {
         if (index >= _images.length) {
@@ -173,29 +189,35 @@ class ImageGalleryState extends State<ImageGallery> {
       onTap: () => _openImageDetails(image),
       child: Card(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CachedNetworkImage(
-              imageUrl: image['webformatURL'],
-              placeholder: (context, url) => const CircularProgressIndicator(),
-              errorWidget: (context, url, error) => const Icon(Icons.error),
+            Expanded(
+              child: CachedNetworkImage(
+                imageUrl: image['webformatURL'],
+                fit: BoxFit.contain, 
+                width: double.infinity,
+                placeholder: (context, url) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Row(
                     children: [
                       const Icon(Icons.thumb_up, color: Colors.grey),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 4),
                       Text('${image['likes']}'),
                     ],
                   ),
-                  const SizedBox(width: 16),
                   Row(
                     children: [
                       const Icon(Icons.remove_red_eye, color: Colors.grey),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 4),
                       Text('${image['views']}'),
                     ],
                   ),
